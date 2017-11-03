@@ -12,27 +12,27 @@ def log(sql, args=()):
 
 async def create_pool(loop, **kw):
     logging.info('create database connection pool...')
-    global __pool
+    global __pool # 定义了一个全局的连接池
     __pool = await aiomysql.create_pool(
-        host=kw.get('host', 'localhost'),
-        port=kw.get('port', 3306),
-        user=kw['user'],
-        password=kw['password'],
-        db=kw['db'],
-        charset=kw.get('charset', 'utf8'),
-        autocommit=kw.get('autocommit', True),
-        maxsize=kw.get('maxsize', 10),
-        minsize=kw.get('minsize', 1),
+        host=kw.get('host', 'localhost'), # ip地址
+        port=kw.get('port', 3306), # 端口号
+        user=kw['user'], # 登录名
+        password=kw['password'], # 密码
+        db=kw['db'], # 数据库名
+        charset=kw.get('charset', 'utf8'), # 编码
+        autocommit=kw.get('autocommit', True), # 自动提交
+        maxsize=kw.get('maxsize', 10), # 最大连接数
+        minsize=kw.get('minsize', 1), # 最小连接数
         loop=loop
     )
 
-async def select(sql, args, size=None):
+async def select(sql, args, size=None): 
     log(sql, args)
     global __pool
-    async with __pool.get() as conn:
-        async with conn.cursor(aiomysql.DictCursor) as cur:
-            await cur.execute(sql.replace('?', '%s'), args or ())
-            if size:
+    async with __pool.get() as conn: # 获取连接
+        async with conn.cursor(aiomysql.DictCursor) as cur: # 获取游标
+            await cur.execute(sql.replace('?', '%s'), args or ()) # 获取sql语句并执行
+            if size: # size 不为空时截取数据
                 rs = await cur.fetchmany(size)
             else:
                 rs = await cur.fetchall()
@@ -42,7 +42,7 @@ async def select(sql, args, size=None):
 async def execute(sql, args, autocommit=True):
     log(sql)
     async with __pool.get() as conn:
-        if not autocommit:
+        if not autocommit: # 不为空时执行下一句 ，建议使用'if x is not None'
             await conn.begin()
         try:
             async with conn.cursor(aiomysql.DictCursor) as cur:
@@ -56,12 +56,14 @@ async def execute(sql, args, autocommit=True):
             raise
         return affected
 
+# 拼接类似(?,?,?……)的字符串
 def create_args_string(num):
     L = []
     for n in range(num):
         L.append('?')
     return ', '.join(L)
 
+# 字段
 class Field(object):
 
     def __init__(self, name, column_type, primary_key, default):
@@ -73,26 +75,31 @@ class Field(object):
     def __str__(self):
         return '<%s, %s:%s>' % (self.__class__.__name__, self.column_type, self.name)
 
+# String 字段
 class StringField(Field):
 
     def __init__(self, name=None, primary_key=False, default=None, ddl='varchar(100)'):
         super().__init__(name, ddl, primary_key, default)
 
+# Boolean 字段
 class BooleanField(Field):
 
     def __init__(self, name=None, default=False):
         super().__init__(name, 'boolean', False, default)
 
+# Integer 字段
 class IntegerField(Field):
 
     def __init__(self, name=None, primary_key=False, default=0):
         super().__init__(name, 'bigint', primary_key, default)
 
+# Float 字段
 class FloatField(Field):
 
     def __init__(self, name=None, primary_key=False, default=0.0):
         super().__init__(name, 'real', primary_key, default)
 
+# Text 字段
 class TextField(Field):
 
     def __init__(self, name=None, default=None):
@@ -114,7 +121,7 @@ class ModelMetaclass(type):
                 mappings[k] = v
                 if v.primary_key:
                     # 找到主键:
-                    if primaryKey:
+                    if primaryKey: # 有两个以上主键则抛出错误
                         raise StandardError('Duplicate primary key for field: %s' % k)
                     primaryKey = k
                 else:
@@ -154,8 +161,8 @@ class Model(dict, metaclass=ModelMetaclass):
     def getValueOrDefault(self, key):
         value = getattr(self, key, None)
         if value is None:
-            field = self.__mappings__[key]
-            if field.default is not None:
+            field = self.__mappings__[key] # 是其中一列
+            if field.default is not None: # 获取列的缺省值
                 value = field.default() if callable(field.default) else field.default
                 logging.debug('using default value for %s: %s' % (key, str(value)))
                 setattr(self, key, value)
