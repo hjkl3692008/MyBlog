@@ -18,13 +18,19 @@ async def create_pool(loop, **kw):
         port=kw.get('port', 3306), # 端口号
         user=kw['user'], # 登录名
         password=kw['password'], # 密码
-        db=kw['db'], # 数据库名
+        db=kw['database'], # 数据库名
         charset=kw.get('charset', 'utf8'), # 编码
         autocommit=kw.get('autocommit', True), # 自动提交
         maxsize=kw.get('maxsize', 10), # 最大连接数
         minsize=kw.get('minsize', 1), # 最小连接数
         loop=loop
     )
+
+async def destory_pool():
+    global __pool
+    if __pool is not None :
+        __pool.close()
+        await __pool.wait_closed()
 
 async def select(sql, args, size=None): 
     log(sql, args)
@@ -46,6 +52,9 @@ async def execute(sql, args, autocommit=True):
             await conn.begin()
         try:
             async with conn.cursor(aiomysql.DictCursor) as cur:
+                # print(sql)
+                # print(args)
+                # print(sql.replace('?', '%s'))
                 await cur.execute(sql.replace('?', '%s'), args)
                 affected = cur.rowcount
             if not autocommit:

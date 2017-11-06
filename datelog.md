@@ -12,6 +12,12 @@
 >>二级引用  
 [baidu](http://www.baidu.com)  
 产生分割线
-***
----
 
+
+##2017-11-03
+
+1.***插入错误***  
+- 在执行 execute 时遇到 IntegrityError: (1062, Duplicate entry for key)问题，分析发现应该是数据库已经存在该数据导致的。但  
+email这个字段并不是主键，很奇怪，在此记录下来。
+- 找到原因：这个字段是unique键。  
+2.******
