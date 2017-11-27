@@ -27,3 +27,25 @@ email这个字段并不是主键，很奇怪，在此记录下来。
 1.***建立框架***
 
 2.***建立前端页面***
+
+##2017-11-22  
+
+1.***用正则表达式替换，将\r\n替换为\n。其中\r指的是CR，\n指的是LF。***  
+将CRLF替换成LF格式。git会智能的将这两种格式互换，但是很遗憾这个是有bug的  
+
+##2017-11-23  
+
+1.***fabric需要在python2的环境下运行***  
+这是在是个麻烦的点，首先需要将2和3一起公用，先安装3再安装2，依照3配置2的  
+环境变量，之后修改python.exe和pythonw.exe的名字，如：python3.exe，pythonw3.exe  
+之后还要重新下载pip。在使用时python(2/3)+命令。fab.exe不能在3下面运行，而且  
+所以需要如下命令打包：python2 -m fabric build,*不是fab，而是fabric，而且需要切到对应的打包路径！*  
+
+2.***打包时的报错***  
+tar: Exiting with failure status due to previous errors
+
+Fatal error: local() encountered an error (return code 2) 
+while executing 'tar --dereference -czvf ../dist/dist-awesome.tar.gz --exclude='test' --exclude='.*' --exclude='*.pyc' --exclude='*.pyo' static templates transwarp favicon.ico *.py'
+
+Aborting.
+
