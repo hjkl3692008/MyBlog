@@ -68,8 +68,10 @@ def deploy():
     with cd(_REMOTE_BASE_DIR):
         sudo('rm -f www')
         sudo('ln -s %s www' % newdir)
-        sudo('chown www-data:www-data www')
-        sudo('chown -R www-data:www-data %s' % newdir)
+        # change docs to unix
+        sudo('find /srv/awesome/%s -name "*.py" | xargs sed -i "s/\r$//g" ' % newdir)
+        sudo('chown root:root www')
+        sudo('chown -R root:root %s' % newdir)
     with settings(warn_only=True):
         sudo('supervisorctl stop awesome')
         sudo('supervisorctl start awesome')
@@ -117,7 +119,7 @@ def rollback():
         print ('Start rollback...')
         sudo('rm -f www')
         sudo('ln -s %s www' % old)
-        sudo('chown www-data:www-data www')
+        sudo('chown root:root www')
         with settings(warn_only=True):
             sudo('supervisorctl stop awesome')
             sudo('supervisorctl start awesome')

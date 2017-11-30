@@ -49,3 +49,10 @@ while executing 'tar --dereference -czvf ../dist/dist-awesome.tar.gz --exclude='
 
 Aborting.
 
+##2017-11-30  
+
+1.***nginx静态资源***  
+静态资源403的问题，经常是user nobody导致的，换成root用户。然后需要确定nginx的配置位置  
+使用nginx -s stop，nginx -c reload的时候发现读取的是/usr/share/nginx/nginx.conf目录  
+但我们的配置放在了/etc/nginx/nginx.conf下，所以做一个软链，再此重启。get。
+
