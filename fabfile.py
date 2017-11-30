@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
 __author__ = 'Michael Liao'
@@ -75,7 +75,9 @@ def deploy():
     with settings(warn_only=True):
         sudo('supervisorctl stop awesome')
         sudo('supervisorctl start awesome')
-        sudo('/etc/init.d/nginx reload')
+        sudo('nginx -s stop')
+        sudo('nginx -c /etc/nginx/nginx.conf')
+        sudo('nginx -s reload')
 
 RE_FILES = re.compile('\r?\n')
 
